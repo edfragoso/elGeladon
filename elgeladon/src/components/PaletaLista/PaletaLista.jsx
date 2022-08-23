@@ -1,10 +1,11 @@
 import "./PaletaLista.css";
-import { useState, useEffect } from "react"; //importando o usestate
+import { useState, useEffect, useCallback } from "react"; 
 import PaletaListaItem from "../PaletaListaItem/PaletaListaItem";
 import { PaletaService } from "../../services/PaletaService";
 import PaletaDetalhesModal from "../PaletaDetalhesModal/PaletaDetalhesModal";
+import { ActionMode } from "../../constants/index";
 
-function PaletaLista({ paletaCriada, mode }) {
+function PaletaLista({ paletaCriada, mode, updatePaleta, deletePaleta, paletaEditada }) {
   const [paletas, setPaletas] = useState([]);
   const [paletaSelecionada, setPaletaSelecionada] = useState({});
   const [paletaModal, setPaletaModal] = useState(false);
@@ -29,25 +30,37 @@ function PaletaLista({ paletaCriada, mode }) {
 
   const getPaletaById = async (paletaId) => {
     const response = await PaletaService.getById(paletaId);
-    setPaletaModal(response);
+    const mapper = {
+      [ActionMode.NORMAL]: () => setPaletaModal(response),
+      [ActionMode.ATUALIZAR]: () => updatePaleta(response),
+      [ActionMode.DELETAR]: () => deletePaleta(response),
+    };
+
+    mapper[mode]();
+    
   };
 
-  const adicionaPaletaNaLista = (paleta) => {
-    const lista = [...paletas, paleta];
-    setPaletas(lista);
-  };
+  const adicionaPaletaNaLista = useCallback(
+    (paleta) => {
+      const lista = [...paletas, paleta];
+      setPaletas(lista);
+    },
+    [paletas]
+  );
 
   useEffect(() => {
     getLista();
-  }, []);
+  }, [paletaEditada]);
 
-  useEffect(() => {
-    if (paletaCriada) adicionaPaletaNaLista(paletaCriada);
-  }, [paletaCriada]);
-
-  // possue dois parametros a 1° a condição e 2° a index da banda selecionada
-  //se o canRender for true ele renderiza o span senao não
-
+useEffect(() => {
+    if (
+      paletaCriada &&
+      !paletas.map(({ id }) => id).includes(paletaCriada.id)
+    ) {
+      adicionaPaletaNaLista(paletaCriada);
+    }
+  }, [adicionaPaletaNaLista, paletaCriada, paletas]);
+  
   return (
     <div className="PaletaLista">
       {paletas.map((paleta, index) => (
