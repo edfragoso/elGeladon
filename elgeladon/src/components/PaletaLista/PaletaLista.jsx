@@ -4,7 +4,7 @@ import PaletaListaItem from "../PaletaListaItem/PaletaListaItem";
 import { PaletaService } from "../../services/PaletaService";
 import PaletaDetalhesModal from "../PaletaDetalhesModal/PaletaDetalhesModal";
 
-function PaletaLista({ paletaCriada }) {
+function PaletaLista({ paletaCriada, mode }) {
   const [paletas, setPaletas] = useState([]);
   const [paletaSelecionada, setPaletaSelecionada] = useState({});
   const [paletaModal, setPaletaModal] = useState(false);
@@ -52,6 +52,7 @@ function PaletaLista({ paletaCriada }) {
     <div className="PaletaLista">
       {paletas.map((paleta, index) => (
         <PaletaListaItem
+          mode={mode}
           key={`PaletaListaItem-${index}`}
           paleta={paleta}
           quantidadeSelecionada={paletaSelecionada[index]}
